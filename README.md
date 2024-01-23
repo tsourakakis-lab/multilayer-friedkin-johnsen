@@ -1,1 +1,1 @@
-# multilayer-friedkin-johnsen
+# Multilayer Friedkin-Johnsen models
