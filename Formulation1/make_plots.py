@@ -21,6 +21,7 @@ def plot_weight_data(ys, xlabel, ylabel, plotboxplot = False):
     d = ['lightcoral', 'cornflowerblue', 'lightgreen', 'pink']
     c = ['indianred', 'royalblue', 'greenyellow', 'hotpink']
     m = ['darkred', 'blue', 'darkolivegreen', 'darkmagenta']
+    hatches = ['/', '\\', '|', '-']
     meandata = []
     for i in range(len(names_plot)):
         meandata.append([np.mean(data) for data in datas[i]])
@@ -32,11 +33,12 @@ def plot_weight_data(ys, xlabel, ylabel, plotboxplot = False):
                         whiskerprops=dict(color=d[i], linewidth=1),
                         flierprops=dict(color=d[i], markeredgecolor=c[i], linewidth=1),
                         medianprops=dict(color=c[i]),
-                        meanprops = dict(markerfacecolor = m[i], markeredgecolor=m[i], linewidth=1))
+                        meanprops = dict(markerfacecolor = m[i], markeredgecolor=m[i], 
+                                         linewidth=1))
             line, = axes.plot(range(1, len(labels) + 1), meandata[-1], color = m[i])
             line.set_label(names_plot[i])
-        plt.xticks(range(1, len(labels) + 1), labels)
-        plt.xlabel(xlabel)
+        #plt.xticks(range(1, len(labels) + 1), labels, fontsize=12)
+        #plt.xlabel(xlabel, fontsize=15)
     if plotboxplot == False:
         toprint = {}
         for j in range(len(names_plot)):
@@ -47,11 +49,20 @@ def plot_weight_data(ys, xlabel, ylabel, plotboxplot = False):
         for attribute in toprint:
             offset = width * multiplier
             axes.bar(x + offset, toprint[attribute], width, 
-                     label=attribute, color = m[multiplier])
+                     label=attribute, color = m[multiplier],
+                     hatch=hatches[multiplier])
             multiplier += 1
-        plt.xlabel(f'{xlabel}={labels[0]}')
-    plt.legend()
-    plt.ylabel(ylabel)
+        #plt.xlabel(f'{xlabel}={labels[0]}')
+    plt.tick_params(
+                    axis='x',          # changes apply to the x-axis
+                    which='both',      # both major and minor ticks are affected
+                    bottom=False,      # ticks along the bottom edge are off
+                    top=False,         # ticks along the top edge are off
+                    labelbottom=False) # labels along the bottom edge are off
+    plt.legend(fontsize=15)
+    plt.ticklabel_format(axis='both', style='sci', scilimits=(-2,-2))
+    plt.ylabel('Test Loss', fontsize=15)
+    plt.yticks(fontsize=12)
     plt.savefig(f'./Figures/{typeofexp}_{ylabel}.png', bbox_inches='tight', dpi=400)
     plt.show()
 
@@ -97,19 +108,23 @@ def plot_train_error_data(ys, typeofexp, list_of_el):
     fig, axes = plt.subplots(len(datas[0]))
     m = ['darkred', 'blue', 'darkolivegreen', 'darkmagenta']
     names_plot = ['Multi-Layer', 'Singe-Layer1', 'Singe-Layer2', 'Singe-Layers']
+    markers = ["o", "d", "^", "x"]
     ax1 = axes
     for i in range(len(datas[0])):
         for j in range(len(names_plot)):
             if len(datas[0]) > 1: ax1 = axes[i]
             ax1.plot(range(1, len(datas[j][i]) + 1), datas[j][i], 
-                    color = m[j], label = names_plot[j],linewidth=4.0)
-            ax1.text(225, (min(datas[j][i])+max(datas[j][i]))/2,
+                    color = m[j], label = names_plot[j],linewidth=4.0,
+                    marker = markers[j], markevery=9, markersize=10)
+            if len(datas[0]) > 1: ax1.text(225, (min(datas[j][i])+max(datas[j][i]))/2,
                     f'{typeofexp}={list_of_el[i]}')
         if i<=(len(datas[j])-2): ax1.get_xaxis().set_visible(False)
-        if i==(int(len(datas[j])/2)): ax1.set_ylabel('train_error')
-        if i==0 and len(datas[0]) > 1: ax1.set_title(f'Training error vs {typeofexp}')
-    plt.legend()
-    plt.xlabel('Epochs')
+        if i==(int(len(datas[j])/2)): ax1.set_ylabel('Train Loss', fontsize=15)
+        if i==0 and len(datas[0]) > 1: ax1.set_title(f'Training error vs {typeofexp}', fontsize=15)
+    plt.legend(fontsize=15)
+    plt.xlabel('Epochs', fontsize=15)
+    plt.yticks(fontsize=12)
+    plt.xticks(fontsize=12)
     plt.savefig(f'./Figures/{typeofexp}_train_error.png', bbox_inches='tight', dpi=400)
     plt.show()
    
@@ -135,9 +150,9 @@ def plot_results(iters = 10, typeofexp = 'p',
         for losstype in ['train_loss', 'test_loss', 'resloss', 'layerloss']:
             for algname in algnames: 
                 fjm[losstype][algname][el] = np.mean(fjm[losstype][algname][el], axis = 0)
-    plot_weight_data(fjm['resloss'], typeofexp, 'resloss')
+    #plot_weight_data(fjm['resloss'], typeofexp, 'resloss')
     plot_weight_data(fjm['test_loss'], typeofexp, 'test_loss')
-    plot_layer_data(fjm['layerloss'], typeofexp, 'layerloss')
+    #plot_layer_data(fjm['layerloss'], typeofexp, 'layerloss')
     plot_train_error_data(fjm['train_loss'], typeofexp, list_of_el)
 
 
