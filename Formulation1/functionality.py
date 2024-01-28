@@ -3,24 +3,21 @@ import networkx as nx
 import torch
 
 
-#predictions
-def pred(lambdas, b, Ws, x):
-    n = len(x)
-    L = len(lambdas) - n
-    y = lambdas[0:n]*b
-    for u in range(n): 
-        for l in range(L):
-            y[u] += float((1-lambdas[u])*lambdas[n+l]*(Ws[l][u,:].reshape(1,n)@x))
-    return y
-
+#Prediction
+def pred(lambdas, b, Ws, x, n, L,t = 0):
+        prediction = lambdas[0:n]*b
+        for l in range(L): 
+            if len(Ws)==1:
+                prediction = prediction+lambdas[n+l]*(Ws[0][l]*((1-lambdas[0:n])@torch.ones((1,n)).double()))@x[t]
+        return prediction  
 
 #Loss Function
 def lossL1(T, lambdas, b, Ws, x, y, criterion = torch.nn.MSELoss()):
     lossret = []
+#     print(criterion)
     for t in range(T):
         if len(Ws)==1:
-            lossret.append((1/T)*criterion(pred(lambdas, b, Ws[0], x[t]), y[t]).numpy())
+            lossret.append((1/T)*criterion(pred(lambdas, b, Ws, x, len(x[0]), len(lambdas) - len(x[0]),t=t), y[t]).numpy())
         else:
-            lossret.append((1/T)*criterion(pred(lambdas, b, Ws[t], x[t]), y[t]).numpy())
+            lossret.append((1/T)*criterion(pred(lambdas, b, Ws, x), y[t]).numpy())
     return lossret
-

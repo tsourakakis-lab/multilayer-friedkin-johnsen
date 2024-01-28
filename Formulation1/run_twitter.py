@@ -15,7 +15,7 @@ def weighted(G):
         if np.sum(A[i,:])==0: 
             A[i,i] = 1
             con+=1
-    print(con, A.shape)
+#     print(con, A.shape)
     return torch.from_numpy((A.T*1/A.sum(axis = 1).T).T)
 
 def read_edge_list(filename, n = 3409):
@@ -63,8 +63,8 @@ def load_real_data(n, optype):
     G2 = read_edge_list(f'./Twitter/G_{optype}_scc.edgelist', n)
     Ws.append(weighted(G1))
     Ws.append(weighted(G2))
-    A1 = nx.adjacency_matrix(G1)
-    A2 = nx.adjacency_matrix(G2)
+    A1 = nx.adjacency_matrix(G1).todense()
+    A2 = nx.adjacency_matrix(G2).todense()
     for i in range(n): 
         if np.sum(A1[i,:])==0: A1[i,i] = 1
     for i in range(n): 
@@ -88,11 +88,12 @@ def make_experiments_twitter_new(n = 430,
                                  T_train = 45, 
                                  T_test = 5, 
                                  optype = 'vax',
-                                 algname = 'multi'):   
+                                 algname = 'multi',
+                                start_pos=0, num_epochs=100, printall=False):   
     Ws = load_real_data(n, optype)
     ops_all = np.array(pd.read_csv(f'./Twitter/{optype}_ops.txt', sep=' ', header=None))/10
     ops = torch.from_numpy(ops_all[:,0].reshape(n,1))
-    x_train, y_train, x_test, y_test = split_train_and_test_data(n, torch.from_numpy(ops_all[:,-(T_train+T_test+1):].T), T_train, T_test)
+    x_train, y_train, x_test, y_test = split_train_and_test_data(n, torch.from_numpy( ops_all[:,start_pos:start_pos+T_train+T_test+1].T), T_train, T_test)
     #find best learning rate
     best_lrdiv = 10 #fix best_lrdiv
     #----------------------------------------------------------------------
@@ -114,9 +115,10 @@ def make_experiments_twitter_new(n = 430,
     elif algname == 'lboth': Ws_ = [[Ws[2], Ws[2]]]
     else: return
     solver  = TensorSolver(ops, Ws_, x_train, y_train)
-    train_loss = solver.training(num_epochs = 100, lrdiv = best_lrdiv)
+    train_loss = solver.training(num_epochs = num_epochs, lrdiv = best_lrdiv, printall=printall)
     test_loss =  lossL1(T_test, solver.lambdas.detach(), ops, Ws_, x_test, y_test, criterion = torch.nn.L1Loss())
     print(test_loss)
+    return (train_loss, test_loss, solver.lambdas.detach())
 
 
 
