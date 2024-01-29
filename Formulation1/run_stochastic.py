@@ -22,7 +22,7 @@ def load_data(folder_name, ending):
 
 #Splitting to train and test data
 def split_train_and_test_data(ops_all, T_train, T_test):
-    x_train = [ops_all[i].reshape(n, 1) for i in range(T_train)]
+    x_train = [ops_all[i].reshape(n, 1) for i in range(0,T_train)]
     y_train = [ops_all[i].reshape(n, 1) for i in range(1,T_train+1)]
     x_test = [ops_all[i].reshape(n, 1) for i in range(T_train, T_train+T_test)]
     y_test = [ops_all[i].reshape(n, 1) for i in range(T_train+1, T_train+T_test+1)]
@@ -65,14 +65,17 @@ def run_the_experiments(T_train, T_test, iter, folder_name_all,
     else: return
     solver  = TensorSolver(ops, Ws_, x_train, y_train)
     train_loss = solver.training(num_epochs = 100, lrdiv = best_lrdiv)
-    test_loss =  lossL1(T_test, solver.lambdas.detach(), ops, Ws_, x_test, y_test, criterion = torch.nn.L1Loss())
+    test_loss =  lossL1(T_test, solver.lambdas.detach(), 
+                        ops, Ws_, 
+                        x_test, y_test, 
+                        criterion = torch.nn.L1Loss())
     resloss = np.abs(np.concatenate([respar.numpy(), layers.numpy()])-solver.lambdas.detach().numpy().reshape(-1))
     save_results(folder_name_all, iter, f'{extras}', train_loss, test_loss, resloss, algname)
     return best_lrdiv
 
 
 #Make the experiments 
-def make_X_experiments(iters = 10, T_train = 7, T_test = 3, typeofexp = 'p', 
+def make_X_experiments(iters = 10, T_train = 5, T_test = 3, typeofexp = 'p', 
                        list_of_el = [0.1, 0.3, 0.5, 0.7, 0.9]):
     if not os.path.exists('./ExpResults'): os.makedirs('./ExpResults')
     folder_name_all = f'./ExpResults/{typeofexp}_data'

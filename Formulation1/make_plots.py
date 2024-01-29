@@ -17,7 +17,7 @@ def plot_weight_data(ys, xlabel, ylabel, plotboxplot = False):
     for algname in ys:
         labels, data = list(ys[algname].keys()), list(ys[algname].values())
         datas.append(data)
-    names_plot = ['Multi-Layer', 'Singe-Layer1', 'Singe-Layer2', 'Singe-Layers']
+    names_plot = ['Multilayer', 'Layer 1', 'Layer 2', 'Layers 1,2']
     d = ['lightcoral', 'cornflowerblue', 'lightgreen', 'pink']
     c = ['indianred', 'royalblue', 'greenyellow', 'hotpink']
     m = ['darkred', 'blue', 'darkolivegreen', 'darkmagenta']
@@ -60,7 +60,7 @@ def plot_weight_data(ys, xlabel, ylabel, plotboxplot = False):
                     top=False,         # ticks along the top edge are off
                     labelbottom=False) # labels along the bottom edge are off
     plt.legend(fontsize=15)
-    plt.ticklabel_format(axis='both', style='sci', scilimits=(-2,-2))
+    plt.ticklabel_format(axis='both', style='sci', scilimits=(-1,-1))
     plt.ylabel('Test Loss', fontsize=15)
     plt.yticks(fontsize=12)
     plt.savefig(f'./Figures/{typeofexp}_{ylabel}.png', bbox_inches='tight', dpi=400)
@@ -74,7 +74,7 @@ def plot_layer_data(ys, xlabel, ylabel, plot_line = False):
         labels, data = list(ys[algname].keys()), list(ys[algname].values())
         datas.append(data)
     m = ['darkred', 'blue', 'darkolivegreen', 'darkmagenta']
-    names_plot = ['Multi-Layer', 'Singe-Layer1', 'Singe-Layer2', 'Singe-Layers']
+    names_plot = ['Multilayer', 'Layer 1', 'Layer 2', 'Layers 1,2']
     meandata = []
     for i in range(len(datas)):
         meandata.append([np.mean(d) for d in datas[i]])
@@ -107,7 +107,7 @@ def plot_train_error_data(ys, typeofexp, list_of_el):
         datas.append(data)
     fig, axes = plt.subplots(len(datas[0]))
     m = ['darkred', 'blue', 'darkolivegreen', 'darkmagenta']
-    names_plot = ['Multi-Layer', 'Singe-Layer1', 'Singe-Layer2', 'Singe-Layers']
+    names_plot = ['Multilayer', 'Layer 1', 'Layer 2', 'Layers 1,2']
     markers = ["o", "d", "^", "x"]
     ax1 = axes
     for i in range(len(datas[0])):
