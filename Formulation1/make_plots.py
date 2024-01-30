@@ -7,8 +7,8 @@ import sys
 def load_results(folder_name_all, iter, extras, ending = ''):
     train_loss = np.loadtxt(f'{folder_name_all}/{iter}_{extras}_train_loss{ending}.txt')
     test_loss = np.loadtxt(f'{folder_name_all}/{iter}_{extras}_test_loss{ending}.txt')
-    resloss = np.loadtxt(f'{folder_name_all}/{iter}_{extras}_resloss{ending}.txt')
-    return train_loss, test_loss, resloss
+    #resloss = np.loadtxt(f'{folder_name_all}/{iter}_{extras}_resloss{ending}.txt')
+    return train_loss, test_loss#, resloss
 
 
 def plot_weight_data(ys, xlabel, ylabel, plotboxplot = False):
@@ -17,7 +17,7 @@ def plot_weight_data(ys, xlabel, ylabel, plotboxplot = False):
     for algname in ys:
         labels, data = list(ys[algname].keys()), list(ys[algname].values())
         datas.append(data)
-    names_plot = ['Multilayer', 'Layer 1', 'Layer 2', 'Layers 1,2']
+    names_plot = ['Multilayer', r'$L_1$', r'$L_2$', r'$L_1\cup L_2$']
     d = ['lightcoral', 'cornflowerblue', 'lightgreen', 'pink']
     c = ['indianred', 'royalblue', 'greenyellow', 'hotpink']
     m = ['darkred', 'blue', 'darkolivegreen', 'darkmagenta']
@@ -59,11 +59,11 @@ def plot_weight_data(ys, xlabel, ylabel, plotboxplot = False):
                     bottom=False,      # ticks along the bottom edge are off
                     top=False,         # ticks along the top edge are off
                     labelbottom=False) # labels along the bottom edge are off
-    plt.legend(fontsize=15)
+    #plt.legend(fontsize=15)
     plt.ticklabel_format(axis='both', style='sci', scilimits=(-1,-1))
     plt.ylabel('Test Loss', fontsize=15)
     plt.yticks(fontsize=12)
-    plt.savefig(f'./Figures/{typeofexp}_{ylabel}.png', bbox_inches='tight', dpi=400)
+    plt.savefig(f'./Figures/{typeofexp}_{ylabel}.png', bbox_inches='tight', dpi=1000)
     plt.show()
 
 
@@ -74,7 +74,7 @@ def plot_layer_data(ys, xlabel, ylabel, plot_line = False):
         labels, data = list(ys[algname].keys()), list(ys[algname].values())
         datas.append(data)
     m = ['darkred', 'blue', 'darkolivegreen', 'darkmagenta']
-    names_plot = ['Multilayer', 'Layer 1', 'Layer 2', 'Layers 1,2']
+    names_plot = ['Multilayer', r'$L_1$', r'$L_2$', r'$L_1\cup L_2$']
     meandata = []
     for i in range(len(datas)):
         meandata.append([np.mean(d) for d in datas[i]])
@@ -107,7 +107,7 @@ def plot_train_error_data(ys, typeofexp, list_of_el):
         datas.append(data)
     fig, axes = plt.subplots(len(datas[0]))
     m = ['darkred', 'blue', 'darkolivegreen', 'darkmagenta']
-    names_plot = ['Multilayer', 'Layer 1', 'Layer 2', 'Layers 1,2']
+    names_plot = ['Multilayer', r'$L_1$', r'$L_2$', r'$L_1\cup L_2$']
     markers = ["o", "d", "^", "x"]
     ax1 = axes
     for i in range(len(datas[0])):
@@ -125,7 +125,7 @@ def plot_train_error_data(ys, typeofexp, list_of_el):
     plt.xlabel('Epochs', fontsize=15)
     plt.yticks(fontsize=12)
     plt.xticks(fontsize=12)
-    plt.savefig(f'./Figures/{typeofexp}_train_error.png', bbox_inches='tight', dpi=400)
+    plt.savefig(f'./Figures/{typeofexp}_train_error.png', bbox_inches='tight', dpi=1000)
     plt.show()
    
     
@@ -133,7 +133,7 @@ def plot_results(iters = 10, typeofexp = 'p',
                  list_of_el = [0.1, 0.3, 0.5, 0.7, 0.9]):
     folder_name_all = f'./ExpResults/{typeofexp}_data'
     algnames = ['multi', 'l1', 'l2', 'lboth']
-    fjm = {'train_loss':{}, 'test_loss':{}, 'resloss':{}, 'layerloss':{}}
+    fjm = {'train_loss':{}, 'test_loss':{}}#, 'resloss':{}, 'layerloss':{}}
     for algname in algnames: 
         for losses in fjm: fjm[losses][algname] = {}
     for el in list_of_el:
@@ -142,12 +142,12 @@ def plot_results(iters = 10, typeofexp = 'p',
         extras = f'{typeofexp}_{el}'
         for iter in range(iters):
             for algname in algnames: 
-                train_loss, test_loss, resloss = load_results(folder_name_all, iter, extras, ending = f'_{algname}')
+                train_loss, test_loss = load_results(folder_name_all, iter, extras, ending = f'_{algname}')
                 fjm['train_loss'][algname][el].append(train_loss)
                 fjm['test_loss'][algname][el].append(test_loss)
-                fjm['resloss'][algname][el].append(resloss[0:-2])
-                fjm['layerloss'][algname][el].append(resloss[-2:])
-        for losstype in ['train_loss', 'test_loss', 'resloss', 'layerloss']:
+                #fjm['resloss'][algname][el].append(resloss[0:-2])
+                #fjm['layerloss'][algname][el].append(resloss[-2:])
+        for losstype in ['train_loss', 'test_loss']:#, 'resloss', 'layerloss']:
             for algname in algnames: 
                 fjm[losstype][algname][el] = np.mean(fjm[losstype][algname][el], axis = 0)
     #plot_weight_data(fjm['resloss'], typeofexp, 'resloss')
@@ -157,8 +157,9 @@ def plot_results(iters = 10, typeofexp = 'p',
 
 
 if __name__ == "__main__": 
-    dictexp = {'p': [1]#[0.1, 0.3, 0.5, 0.7, 0.9],
-               #'uniform': [0.1, 0.2, 0.3, 0.4, 0.5],
+    dictexp = {'p': [1],#[0.1, 0.3, 0.5, 0.7, 0.9],
+               'twitter': ['vax']
+               #,'twitter': ['war'],
                #'normal': [0.1, 0.2, 0.3, 0.4, 0.5],
                #'l1': [0.3, 0.4, 0.5, 0.6, 0.7],
                #'naefalse': [0, 0.025, 0.05, 0.1, 0.2],

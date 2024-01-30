@@ -60,6 +60,12 @@ class TensorSolver:
             squared_all = squared_all + (1/self.T)*torch.nn.L1Loss()(self.pred(t), self.y[t])
         return squared_all
     
+     #L1
+    def lossL12(self, T):
+        squared_all = 0
+        for t in T:
+            squared_all = squared_all + (1/self.T)*torch.nn.L1Loss()(self.pred(t), self.y[t])
+        return squared_all
     
     #Gradient Descent
     def gradient(self, lr = 1):
@@ -94,11 +100,13 @@ class TensorSolver:
             self.gradient(lr=lr)        
             lossval = 0
             if printL1: lossval = self.lossL1().item()
-            else: lossval = self.loss2().item()
+            else: lossval = self.loss().item()
             training_loss.append(lossval)
             if printall:
                 if epoch % 1 == 0:
                     print(f"Epoch: {epoch}, loss {lossval:.8}")
+                    print(f"Epoch: {epoch}, loss {self.loss().item():.8}")
+                    print()
         return training_loss
 
     

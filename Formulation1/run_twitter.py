@@ -8,6 +8,7 @@ import copy
 import networkx as nx
 import pandas as pd
 
+#The stochastic matrix of G's adjacency
 def weighted(G):
     A = nx.adjacency_matrix(G).todense()
     con = 0
@@ -15,9 +16,9 @@ def weighted(G):
         if np.sum(A[i,:])==0: 
             A[i,i] = 1
             con+=1
-    print(con, A.shape)
     return torch.from_numpy((A.T*1/A.sum(axis = 1).T).T)
 
+#Graph from edge list file
 def read_edge_list(filename, n = 3409):
     G = nx.Graph()
     for i in range(n): 
@@ -29,42 +30,15 @@ def read_edge_list(filename, n = 3409):
             G.add_edge(u,v)
     return G
 
-#Twitter Dataset experiments
-def make_experiments_twitter(T_train = 10, T_test = 10, 
-                             optype = 'vax'):
-    import networkx as nx
-    import pandas as pd
-    Wsall = []
-    G = read_edge_list("./Twitter/G.edgelist", n = 3409)
-    n = len(G.nodes())
-    G = weighted(G)
-    G_2 = read_edge_list(f'./Twitter/G_{optype}.edgelist', n = 3409)
-    G_2 = weighted(G_2)
-    for _ in range(T_train+T_test): Wsall.append([G,G_2])
-    
-    opinions = np.array(pd.read_csv(f'./Twitter/{optype}_opinions.txt', sep=' ', header=None))/10
-    print(opinions)
-    x_train = [torch.from_numpy(opinions[:,i]).reshape(n, 1) for i in range(T_train)]
-    y_train = [torch.from_numpy(opinions[:,i]).reshape(n, 1) for i in range(1,T_train+1)]
-    x_test = [torch.from_numpy(opinions[:,i]).reshape(n, 1) for i in range(T_train, T_train+T_test)]
-    y_test = [torch.from_numpy(opinions[:,i]).reshape(n, 1) for i in range(T_train+1, T_train+T_test+1)]
-    b = torch.from_numpy((0.5*np.ones(n)).reshape(n,1))
-    solver  = TensorSolver(b, Wsall[0:T_train], x_train, y_train)
-    train_loss = solver.training()
-    print(train_loss[-1])
-    test_loss =  loss(T_test, solver.lambdas.detach(), b,
-                      Wsall[T_train:T_train+T_test], x_test, y_test)
-    print(test_loss)
-
-
+#Loading Twitter data
 def load_real_data(n, optype):
     Ws = []
     G1 = read_edge_list(f'./Twitter/G_{optype[0]}_scc.edgelist', n)
     G2 = read_edge_list(f'./Twitter/G_{optype}_scc.edgelist', n)
     Ws.append(weighted(G1))
     Ws.append(weighted(G2))
-    A1 = nx.adjacency_matrix(G1)
-    A2 = nx.adjacency_matrix(G2)
+    A1 = nx.adjacency_matrix(G1).todense()
+    A2 = nx.adjacency_matrix(G2).todense()
     for i in range(n): 
         if np.sum(A1[i,:])==0: A1[i,i] = 1
     for i in range(n): 
@@ -88,11 +62,12 @@ def make_experiments_twitter_new(n = 430,
                                  T_train = 45, 
                                  T_test = 5, 
                                  optype = 'vax',
-                                 algname = 'multi'):   
+                                 algname = 'multi',
+                                start_pos=0, num_epochs=100, printall=False):   
     Ws = load_real_data(n, optype)
     ops_all = np.array(pd.read_csv(f'./Twitter/{optype}_ops.txt', sep=' ', header=None))/10
     ops = torch.from_numpy(ops_all[:,0].reshape(n,1))
-    x_train, y_train, x_test, y_test = split_train_and_test_data(n, torch.from_numpy(ops_all[:,-(T_train+T_test+1):].T), T_train, T_test)
+    x_train, y_train, x_test, y_test = split_train_and_test_data(n, torch.from_numpy( ops_all[:,start_pos:start_pos+T_train+T_test+1].T), T_train, T_test)
     #find best learning rate
     best_lrdiv = 10 #fix best_lrdiv
     #----------------------------------------------------------------------
@@ -114,13 +89,39 @@ def make_experiments_twitter_new(n = 430,
     elif algname == 'lboth': Ws_ = [[Ws[2], Ws[2]]]
     else: return
     solver  = TensorSolver(ops, Ws_, x_train, y_train)
-    train_loss = solver.training(num_epochs = 100, lrdiv = best_lrdiv)
+    train_loss = solver.training(num_epochs = num_epochs, lrdiv = best_lrdiv, printall=printall)
     test_loss =  lossL1(T_test, solver.lambdas.detach(), ops, Ws_, x_test, y_test, criterion = torch.nn.L1Loss())
     print(test_loss)
+    return train_loss, test_loss, solver.lambdas.detach()
+
+
+
+#Saving results
+def save_results(folder_name_all, iter, extras, train_loss, test_loss, algname):
+    np.savetxt(f'{folder_name_all}/{iter}_{extras}_train_loss_{algname}.txt', train_loss)
+    np.savetxt(f'{folder_name_all}/{iter}_{extras}_test_loss_{algname}.txt', test_loss)
+
+
+def run_experiments(n = 430, optype = 'vax', algname = 'multi',
+                    _start = 0, _end = 1000, _step = 100,
+                    T_train = 90, T_test = 10):
+    if not os.path.exists('./ExpResults'): os.makedirs('./ExpResults')
+    folder_name_all = f'./ExpResults/twitter_data'
+    if not os.path.exists(folder_name_all): os.makedirs(folder_name_all)
+    extras = f'twitter_{optype}'
+    iter = 0
+    for start_point in range(_start, _end, _step):
+        print(f'Starting time stamp for {iter} iteration:', start_point)
+        train_loss, test_loss, _ = make_experiments_twitter_new(n = n, optype = optype, algname = algname, 
+                                                                start_pos=start_point, T_train = T_train, T_test = T_test)
+        save_results(folder_name_all, iter, f'{extras}', train_loss, test_loss, algname)
+        iter += 1
 
 
 
 if __name__ == "__main__": 
-    make_experiments_twitter_new(n = 430, optype = 'vax', algname = 'lboth')
-    make_experiments_twitter_new(n = 343, optype = 'war', algname = 'l1')
-    pass
+    for optype_n in [('vax', 430), ('war', 343)]:
+        for algname in ['multi', 'l1', 'l2', 'lboth']:
+            run_experiments(n = optype_n[1], optype = optype_n[0], algname = algname,
+                            _start = 0, _end = 1000, _step = 100,
+                            T_train = 90, T_test = 10)
