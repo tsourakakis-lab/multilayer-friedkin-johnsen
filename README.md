@@ -12,9 +12,6 @@
 - python3 ./run_stochastic.py
 
 
-**3) Making Plots**
-
-- python3 ./make_plots.py
 
 ## Twitter real data
 
@@ -25,10 +22,9 @@
 **2) Run Experiments**
 
 - python3 ./run_twitter.py
-(TBD)
 
-**3) Making Plots**
-(TBD)
 
-- python3 ./run_twitter.py
+## Making plots
+
+- python3 ./make_plots.py
 
