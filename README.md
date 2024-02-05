@@ -1,30 +1,10 @@
 # Multilayer Friedkin-Johnsen models
 
-## Synthetic stochastic block model
+## Synthetic dataset
 
-**1) Genarating Data**
+synthetic_experiments.ipynb
 
-- python3 ./stochastic_block_model.py
+## Twitter dataset
 
-
-**2) Run Experiments**
-
-- python3 ./run_stochastic.py
-
-
-
-## Twitter real data
-
-**1) Genarating Data**
-
-- Run the analysis.pynb file inside the Twitter folder
-
-**2) Run Experiments**
-
-- python3 ./run_twitter.py
-
-
-## Making plots
-
-- python3 ./make_plots.py
+twitter_experiments.ipynb
 
