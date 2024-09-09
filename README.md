@@ -1,10 +1,15 @@
-# Multilayer Friedkin-Johnsen models
+# The Multilayer Friedkin-Johnsen Model
 
-## Synthetic dataset
+## Synthetic datasets
 
-synthetic_experiments.ipynb
+MFJ_synthetic.ipynb
 
-## Twitter dataset
+## Real datasets
 
-twitter_experiments.ipynb
+MFJ_download_and_make_real_graphs.ipynb
 
+MFJ_real.ipynb
+
+## Scalability Experiments
+
+MFJ_scalability.ipynb
